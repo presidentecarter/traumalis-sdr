@@ -8,6 +8,8 @@ async function main() {
  
   const result = await sandbox.runCommand('echo', ['Hello from Vercel Sandbox!']);
   console.log(await result.stdout());
+  
+  await sandbox.stop();
 }
  
 main().catch(console.error);
