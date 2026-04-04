@@ -1,7 +1,7 @@
 import { log } from './logger.js';
 
 const API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-haiku-4-5-20251001';
+const MODEL = 'claude-sonnet-4-6';
 const MAX_RETRIES = 3;
 
 interface CallOptions {
