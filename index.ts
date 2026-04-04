@@ -44,18 +44,21 @@ async function main() {
 
   try {
     // Write agent files
+    console.log('Installing agent directions')
     await sandbox.writeFiles(
       agentFiles.map((f) => ({
         path: `/vercel/sandbox/agent/${f.path}`,
         content: Buffer.from(f.content),
       }))
     );
+    console.log('agent directions written')
 
     // Install tsx
     console.log('Installing tsx...');
     const installResult = await sandbox.runCommand({
       cmd: 'npm',
       args: ['install', '-g', 'tsx'],
+      env: { NPM_CONFIG_UPDATE_NOTIFIER: 'false'},
       stderr: process.stderr,
       stdout: process.stdout,
       sudo: true,
@@ -72,6 +75,7 @@ async function main() {
         AGENTMAIL_API_KEY: process.env.AGENTMAIL_API_KEY || '',
         OWNER_EMAIL: process.env.OWNER_EMAIL || '',
         AGENTMAIL_INBOX_ID: process.env.AGENTMAIL_INBOX_ID || '',
+        EXA_API_KEY: process.env.EXA_API_KEY || '',
         LOG_LEVEL: 'debug',
       },
       stderr: process.stderr,

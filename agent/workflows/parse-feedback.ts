@@ -19,7 +19,9 @@ export async function parseFeedbackFromOwner(
   log('info', 'parse-feedback', 'Checking for owner feedback');
 
   const response = await listMessages(inboxId, { limit: 50 });
-  const ownerMessages = response.data.filter((m) => m.from === ownerEmail);
+  // Handle both { data: [...] } and direct array responses from API
+  const messages = Array.isArray(response) ? response : response.data || [];
+  const ownerMessages = messages.filter((m) => m.from === ownerEmail);
 
   if (ownerMessages.length === 0) {
     log('info', 'parse-feedback', 'No messages from owner');
