@@ -13,7 +13,7 @@ export default async function handler(request: any) {
   }
 
   const githubToken = process.env.GITHUB_TOKEN;
-  const githubRepo = process.env.GITHUB_REPO; // e.g. "presidentecarters-projects/traumalis-sdr"
+  const githubRepo = process.env.GITHUB_REPO;
 
   if (!githubToken || !githubRepo) {
     return new Response(
@@ -31,56 +31,22 @@ export default async function handler(request: any) {
 
     console.log(`Sandbox created: ${sandbox.sandboxId}`);
 
-    // Install git and tsx
-    const setup = await sandbox.runCommand({
-      cmd: 'npm',
-      args: ['install', '-g', 'tsx'],
-      sudo: true,
-    });
+    // Fire-and-forget: install tsx, clone repo, install deps, run agent
+    const script = [
+      'npm install -g tsx',
+      `git clone https://$GITHUB_TOKEN@github.com/$GITHUB_REPO.git ${REPO_PATH}`,
+      `cd ${REPO_PATH} && pnpm install --frozen-lockfile`,
+      `cd ${REPO_PATH} && tsx agent/main.ts`,
+    ].join(' && ');
 
-    if (setup.exitCode !== 0) {
-      await sandbox.stop();
-      return new Response(JSON.stringify({ ok: false, error: 'tsx install failed' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Clone the repo (token embedded in URL for auth)
-    const cloneUrl = `https://${githubToken}@github.com/${githubRepo}.git`;
-    const clone = await sandbox.runCommand({
-      cmd: 'git',
-      args: ['clone', cloneUrl, REPO_PATH],
-    });
-
-    if (clone.exitCode !== 0) {
-      await sandbox.stop();
-      return new Response(JSON.stringify({ ok: false, error: 'git clone failed' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    console.log(`Repo cloned to ${REPO_PATH}`);
-
-    // Install project deps inside the cloned repo
-    await sandbox.runCommand({
-      cmd: 'pnpm',
-      args: ['install', '--frozen-lockfile'],
-      cwd: REPO_PATH,
-    });
-
-    // Fire-and-forget: start the agent
     sandbox.runCommand({
-      cmd: 'tsx',
-      args: ['agent/main.ts'],
-      cwd: REPO_PATH,
+      cmd: 'bash',
+      args: ['-c', script],
       env: {
         ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
         AGENTMAIL_API_KEY: process.env.AGENTMAIL_API_KEY || '',
         OWNER_EMAIL: process.env.OWNER_EMAIL || '',
         AGENTMAIL_INBOX_ID: process.env.AGENTMAIL_INBOX_ID || '',
-        // Git identity for self-commits
         GITHUB_TOKEN: githubToken,
         GITHUB_REPO: githubRepo,
       },
