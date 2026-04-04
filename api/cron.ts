@@ -3,8 +3,11 @@ import ms from 'ms';
 
 const REPO_PATH = '/vercel/sandbox/repo';
 
-export default async function handler(request: Request) {
-  const userAgent = request.headers.get('user-agent') || '';
+export default async function handler(request: any) {
+  const rawHeaders = request.headers as any;
+  const userAgent = (typeof rawHeaders.get === 'function'
+    ? rawHeaders.get('user-agent')
+    : rawHeaders['user-agent']) || '';
   if (!userAgent.includes('vercel-cron') && process.env.NODE_ENV === 'production') {
     return new Response('Unauthorized', { status: 401 });
   }
