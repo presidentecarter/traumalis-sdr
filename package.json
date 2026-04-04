@@ -2,9 +2,11 @@
   "name": "traumalis-sdr",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx index.ts",
+    "bundle": "tsx scripts/bundle-agent.ts"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +19,8 @@
     "ms": "^2.1.3",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"
+  },
+  "devDependencies": {
+    "@types/ms": "^2.1.0"
   }
 }
